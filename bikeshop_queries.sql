@@ -1,4 +1,5 @@
-use bikeshop;
+-- BIKE SHOP EXPLORATORY ANALYSIS SQL QUERIES 
+-- SKILLS USED: CTE's, joins, aggregate functions, window functions, sub queries, complex queries
 
 -- Find the highest revenue generating bicycle model type 
 SELECT 
@@ -31,8 +32,8 @@ LIMIT 5 # displaying top 5 only
 
 -- What is the most popular bike model per state?
 
-#Subquery to find the maximum quantity for each state
-#create a CTE called ModelCounts, which calculates the counts of each bike model per state.
+--Subquery to find the maximum quantity for each state
+--create a CTE called ModelCounts, which calculates the counts of each bike model per state.
 WITH ModelCounts AS ( 
     SELECT 
         salestate AS State,
@@ -41,18 +42,18 @@ WITH ModelCounts AS (
     FROM bicycle
     GROUP BY State, bikemodel WITH ROLLUP
 )
-# Query to retrieve the most popular bike model per state from the CTE
+--Query to retrieve the most popular bike model per state from the CTE
 SELECT
-    mc.State, #Select state from CTE
-    mc.bikemodel, #Select bikemodel from CTE
-    mc.Qty #Select qty(count) from CTE
-FROM  ModelCounts mc -- CTE
+    mc.State, 
+    mc.bikemodel, 
+    mc.Qty 
+FROM  ModelCounts mc
 JOIN (
 #subquery to find the max count for each state
     SELECT
         State,
-        MAX(Qty) AS MaxQty #find max qty for each state
-    FROM ModelCounts #from cte
+        MAX(Qty) AS MaxQty 
+    FROM ModelCounts 
     WHERE bikemodel IS NOT NULL -- Exclude the subtotal rows
     GROUP BY State
 ) MaxCounts ON mc.State = MaxCounts.State AND mc.Qty = MaxCounts.MaxQty #joining to CTE
@@ -61,19 +62,19 @@ ORDER BY mc.State ASC,  mc.Qty DESC;
 
 -- Find month over month comparison for 2003 and 2004 sales.
 
-#CTE to find sum of total sales by date (year and month)
-WITH SalesbyDate AS ( #create CTE titled SalesbyDate
+--CTE to find sum of total sales by date (year and month)
+WITH SalesbyDate AS ( 
 	SELECT 	year(orderdate) as order_year,
 			month(orderdate) as order_month,
 			sum(saleprice) as sales 
 	FROM bicycle 
 	GROUP BY year(orderdate), month(orderdate)
 ) 
-#query to find sum of sales aggregated by year and month from the CTE. 
+--query to find sum of sales aggregated by year and month from the CTE. 
 SELECT order_month,
 	SUM(CASE WHEN order_year=2003 THEN sales ELSE 0 END) as sales_2003,
     SUM(CASE WHEN order_year=2004 THEN sales ELSE 0 END) as sales_2004
-FROM SalesbyDate #CTE
+FROM SalesbyDate 
 GROUP BY order_month
 ORDER BY order_month
 ;
@@ -82,8 +83,8 @@ ORDER BY order_month
 
 SELECT 
 	CONCAT(e.lastname,", ", e.firstname) as Employee_Name,
-    ROUND(SUM(ct.amount), 2) as Sales,
-    e.Salary
+    	ROUND(SUM(ct.amount), 2) as Sales,
+   	 e.Salary
 FROM Employee e
 INNER JOIN customertransaction ct on ct.employeeid = e.employeeid
 WHERE YEAR(ct.transactiondate) = 2004
